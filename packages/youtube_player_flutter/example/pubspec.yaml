@@ -1,7 +1,7 @@
 name: youtube_player_flutter_example
-description: Demonstrates how to use the youtube_player_flutter plugin.
-version: 7.0.0
-publish_to: 'none'
+description: "Demonstrates how to use the youtube_player_flutter plugin."
+version: 8.0.0
+publish_to: 'none' 
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   youtube_player_flutter:
     path: ../
 
@@ -19,8 +19,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
+  
   assets:
     - assets/ypf.png
-
-  

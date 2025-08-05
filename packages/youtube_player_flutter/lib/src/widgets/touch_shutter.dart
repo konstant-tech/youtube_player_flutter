@@ -130,10 +130,10 @@ class _TouchShutterState extends State<TouchShutter> {
             onScaleEnd: (_) {
               if (_controller.value.isFullScreen) {
                 if (scaleAmount > 1) {
-                  _controller.fitWidth(MediaQuery.of(context).size);
+                  _controller.fitWidth(MediaQuery.sizeOf(context));
                 }
                 if (scaleAmount < 1) {
-                  _controller.fitHeight(MediaQuery.of(context).size);
+                  _controller.fitHeight(MediaQuery.sizeOf(context));
                 }
               }
             },

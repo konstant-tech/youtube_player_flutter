@@ -57,6 +57,9 @@ class YoutubePlayer extends StatefulWidget {
     this.actionsPadding = const EdgeInsets.all(8.0),
     this.thumbnail,
     this.showVideoProgressIndicator = false,
+    this.customMuteButton,
+    this.showForwardRewindControls = false,
+    this.showCaptionControls = false,
   })  : progressColors = progressColors ?? const ProgressBarColors(),
         progressIndicatorColor = progressIndicatorColor ?? Colors.red;
 
@@ -148,6 +151,27 @@ class YoutubePlayer extends StatefulWidget {
   /// {@endtemplate}
   final bool showVideoProgressIndicator;
 
+  /// {@template youtube_player_flutter.customMuteButton}
+  /// Custom widget to replace the default mute button.
+  ///
+  /// If provided, this widget will be placed before the current time display.
+  /// {@endtemplate}
+  final Widget? customMuteButton;
+
+  /// {@template youtube_player_flutter.showForwardRewindControls}
+  /// Defines whether to show forward and rewind controls with double-tap gestures.
+  ///
+  /// Default is false.
+  /// {@endtemplate}
+  final bool showForwardRewindControls;
+
+  /// {@template youtube_player_flutter.showCaptionControls}
+  /// Defines whether to show caption toggle controls in the video player.
+  ///
+  /// Default is false.
+  /// {@endtemplate}
+  final bool showCaptionControls;
+
   /// Converts fully qualified YouTube Url to video id.
   ///
   /// If videoId is passed as url then no conversion is done.
@@ -157,14 +181,28 @@ class YoutubePlayer extends StatefulWidget {
 
     for (var exp in [
       RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$',
+      ),
       RegExp(
-          r"^https:\/\/(?:music\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/live\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
       RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([_\-a-zA-Z0-9]{11}).*$"),
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/v\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
       RegExp(
-          r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/e\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
+      RegExp(r'^https:\/\/(?:www\.|m\.)?youtu\.be\/([_\-a-zA-Z0-9]{11}).*$'),
+      RegExp(
+        r'^https:\/\/(?:music\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$',
+      ),
+      RegExp(
+        r'^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
+      RegExp(
+        r'^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$',
+      ),
+      RegExp(r'^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$'),
     ]) {
       Match? match = exp.firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1);
@@ -237,7 +275,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         controller: controller,
         child: Container(
           color: Colors.black,
-          width: widget.width ?? MediaQuery.of(context).size.width,
+          width: widget.width ?? MediaQuery.sizeOf(context).width,
           child: _buildPlayer(
             errorWidget: Container(
               color: Colors.black87,
@@ -337,6 +375,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               disableDragSeek: controller.flags.disableDragSeek,
               timeOut: widget.controlsTimeOut,
             ),
+            if (widget.showForwardRewindControls)
+              ForwardRewindControls(
+                controlsTimeOut: widget.controlsTimeOut,
+              ),
             Positioned(
               bottom: 0,
               left: 0,
@@ -347,32 +389,39 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                     ? 1
                     : 0,
                 duration: const Duration(milliseconds: 300),
-                child: controller.flags.isLive
-                    ? LiveBottomBar(
-                        liveUIColor: widget.liveUIColor,
-                        showLiveFullscreenButton:
-                            widget.controller.flags.showLiveFullscreenButton,
-                      )
-                    : Padding(
-                        padding: widget.bottomActions == null
-                            ? const EdgeInsets.all(0.0)
-                            : widget.actionsPadding,
-                        child: Row(
-                          children: widget.bottomActions ??
-                              [
-                                const SizedBox(width: 14.0),
-                                const CurrentPosition(),
-                                const SizedBox(width: 8.0),
-                                ProgressBar(
-                                  isExpanded: true,
-                                  colors: widget.progressColors,
-                                ),
-                                const RemainingDuration(),
-                                const PlaybackSpeedButton(),
-                                const FullScreenButton(),
-                              ],
+                child: SafeArea(
+                  child: controller.flags.isLive
+                      ? LiveBottomBar(
+                          liveUIColor: widget.liveUIColor,
+                          showLiveFullscreenButton:
+                              widget.controller.flags.showLiveFullscreenButton,
+                          customMuteButton: widget.customMuteButton,
+                        )
+                      : Padding(
+                          padding: widget.bottomActions == null
+                              ? const EdgeInsets.all(0.0)
+                              : widget.actionsPadding,
+                          child: Row(
+                            children: widget.bottomActions ??
+                                [
+                                  const SizedBox(width: 14.0),
+                                  if (widget.customMuteButton != null) ...[
+                                    widget.customMuteButton!,
+                                    const SizedBox(width: 8.0),
+                                  ],
+                                  const CurrentPosition(),
+                                  const SizedBox(width: 8.0),
+                                  ProgressBar(
+                                    isExpanded: true,
+                                    colors: widget.progressColors,
+                                  ),
+                                  const RemainingDuration(),
+                                  const PlaybackSpeedButton(),
+                                  const FullScreenButton(),
+                                ],
+                          ),
                         ),
-                      ),
+                ),
               ),
             ),
             Positioned(
@@ -397,6 +446,11 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           if (!controller.flags.hideControls)
             const Center(child: PlayPauseButton()),
           if (controller.value.hasError) errorWidget,
+          if (widget.showCaptionControls)
+            const CaptionControls(
+              iconColor: Colors.white,
+              iconSize: 22.0,
+            ),
         ],
       ),
     );

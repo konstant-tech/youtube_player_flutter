@@ -68,11 +68,12 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.orientationOf(context);
-    final height = MediaQuery.sizeOf(context).height;
+    final size = MediaQuery.sizeOf(context);
 
     final player = SizedBox(
       key: playerKey,
-      height: orientation == Orientation.landscape ? height : null,
+      height: orientation == Orientation.landscape ? size.height : null,
+      width: orientation == Orientation.landscape ? size.width : null,
       child: PopScope(
         canPop: !widget.player.controller.value.isFullScreen,
         onPopInvokedWithResult: (didPop, _) {
@@ -89,7 +90,19 @@ class _YoutubePlayerBuilderState extends State<YoutubePlayerBuilder>
 
     return OrientationBuilder(
       builder: (context, orientation) {
-        return orientation == Orientation.portrait ? child : player;
+        if (orientation == Orientation.portrait) {
+          return child;
+        } else {
+          // In landscape/fullscreen mode, show only the player
+          return Material(
+            color: Colors.black,
+            child: SafeArea(
+              child: Center(
+                child: player,
+              ),
+            ),
+          );
+        }
       },
     );
   }
