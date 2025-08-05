@@ -1,6 +1,6 @@
 {
-    "name": "youtube_player_flutter_example",
-    "short_name": "youtube_player_flutter_example",
+    "name": "example",
+    "short_name": "example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

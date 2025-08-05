@@ -91,6 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
         enableCaption: true,
       ),
     )..addListener(listener);
+    _controller.setDebugLogSettings(value: false);
     _idController = TextEditingController();
     _seekToController = TextEditingController();
     _videoMetaData = const YoutubeMetaData();
@@ -124,14 +125,25 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return YoutubePlayerBuilder(
-      onExitFullScreen: () {
-        // The player forces portraitUp after exiting fullscreen. This overrides the behaviour.
-        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-      },
       player: YoutubePlayer(
         controller: _controller,
         showVideoProgressIndicator: true,
         progressIndicatorColor: Colors.blueAccent,
+        customMuteButton: GestureDetector(
+          onTap: () {
+            if (_isPlayerReady) {
+              _muted ? _controller.unMute() : _controller.mute();
+              setState(() {
+                _muted = !_muted;
+              });
+            }
+          },
+          child: Icon(
+            (_muted) ? Icons.volume_off : Icons.volume_up,
+            color: Colors.white,
+            size: 22.0,
+          ),
+        ),
         topActions: <Widget>[
           const SizedBox(width: 8.0),
           Expanded(
@@ -391,8 +403,6 @@ class _MyHomePageState extends State<MyHomePage> {
         return Colors.yellow;
       case PlayerState.cued:
         return Colors.blue[900]!;
-      default:
-        return Colors.blue;
     }
   }
 
